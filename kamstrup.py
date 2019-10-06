@@ -52,7 +52,7 @@ while True:
       obis_v_l3 = (str(pkt[216]) + '.' + str(pkt[217]) + '.' + str(pkt[218]) + '.' + str(pkt[219]) + '.' + str(pkt[220]) + '.' + str(pkt[221]))
       voltage_l3 = (pkt[223] << 8 | pkt[224])
 
-      if list_type == 35 & len(pkt) == 302: # Hour Packet List #2,sent on the hour xx:00:05, Discard packets that are not complete
+      if list_type == 35 & packet_size == 302: # Hour Packet List #2,sent on the hour xx:00:05, Discard packets that are not complete
         obis_dt2 = (str(pkt[227]) + '.' + str(pkt[228]) + '.' + str(pkt[229]) + '.' + str(pkt[230]) + '.' + str(pkt[231]) + '.' + str(pkt[232]))
         date_time2_year = pkt[235] << 8 | pkt[236]
         date_time2_month = pkt[237]
@@ -99,7 +99,7 @@ while True:
       json_output["obis_v_l3"] = obis_v_l3
       json_output["voltage_l3"] = voltage_l3
       
-      if list_type == 35 & len(pkt) == 302: # Hour packet List #2, discard packet that are not complete
+      if list_type == 35 & packet_size == 302: # Hour packet List #2, discard packet that are not complete
         json_output["obis_dt2"] = obis_dt2
         json_output["date_time2"] = date_time2_str
         json_output["obis_a_e_p"] = obis_a_e_p
