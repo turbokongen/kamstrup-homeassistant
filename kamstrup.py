@@ -8,16 +8,18 @@ SERIAL_SETTINGS = serial.Serial(SERIAL_PORT, 2400, timeout=1)
 json_output = {}
 while True:
     data = SERIAL_SETTINGS.read(320)
-    if len(data) > 0:
+    if len(data) > 0: #skip zero lenght packets
       if not data:
         continue
       pkt = bytearray(data)
       data = SERIAL_SETTINGS.read(pkt[0])
       pkt.extend(bytearray(data))
-      if len(pkt) < 228: # Smallest packet is 228 bytes List #1 Sent every 10 seconds 00:00:xx
-#        print('Data is less than 228 bytes', len(data))
+      if len(pkt) < 3: #allow to be give packet size
         continue
       packet_size = len(pkt)
+      read_packet_size = ((pkt[1] & 0x0F) | pkt[2]) + 2
+      if packet_size != read_packet_size: # Discard corrupt packets
+        continue
       date_time_year = pkt[17] << 8 | pkt[18]
       date_time_month = pkt[19]
       date_time_date = pkt[20]
@@ -52,7 +54,7 @@ while True:
       obis_v_l3 = (str(pkt[216]) + '.' + str(pkt[217]) + '.' + str(pkt[218]) + '.' + str(pkt[219]) + '.' + str(pkt[220]) + '.' + str(pkt[221]))
       voltage_l3 = (pkt[223] << 8 | pkt[224])
 
-      if list_type == 35 and packet_size == 302: # Hour Packet List #2,sent on the hour xx:00:05, Discard packets that are not complete
+      if list_type == 35: # Hour Packet List #2,sent on the hour xx:00:05, Discard packets that are not complete
         obis_dt2 = (str(pkt[227]) + '.' + str(pkt[228]) + '.' + str(pkt[229]) + '.' + str(pkt[230]) + '.' + str(pkt[231]) + '.' + str(pkt[232]))
         date_time2_year = pkt[235] << 8 | pkt[236]
         date_time2_month = pkt[237]
@@ -71,6 +73,7 @@ while True:
         reactive_energy_n = (pkt[295] << 24 | pkt[296] << 16 | pkt[297] << 8 | pkt[298])
 
       json_output["packet_size"] = packet_size
+      json_output["read_packet_size"] = read_packet_size
       json_output["date_time"] = date_time_str
       json_output["list_type"] = list_type
       json_output["obis_list_version"] = obis_list_version
@@ -99,7 +102,7 @@ while True:
       json_output["obis_v_l3"] = obis_v_l3
       json_output["voltage_l3"] = voltage_l3
       
-      if list_type == 35 and packet_size == 302: # Hour packet List #2, discard packet that are not complete
+      if list_type == 35: # Hour packet List #2, discard packet that are not complete
         json_output["obis_dt2"] = obis_dt2
         json_output["date_time2"] = date_time2_str
         json_output["obis_a_e_p"] = obis_a_e_p
