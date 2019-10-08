@@ -3,7 +3,7 @@ import serial
 from time import sleep
 
 SERIAL_PORT = '/dev/ttyUSB1'
-SERIAL_SETTINGS = serial.Serial(SERIAL_PORT, 2400, timeout=1)
+SERIAL_SETTINGS = serial.Serial(SERIAL_PORT, 2400, timeout=2)
 
 json_output = {}
 while True:
@@ -14,11 +14,18 @@ while True:
       pkt = bytearray(data)
       data = SERIAL_SETTINGS.read(pkt[0])
       pkt.extend(bytearray(data))
-      if len(pkt) < 3: #allow to be give packet size
+      if len(pkt) < 9: #Check for header
+        print('Less than 9 bytes received')
+        continue
+      if pkt[8] != 230 and pkt[9] != 231 and pkt[10] != 0 and pkt[11] != 15:
+        print('Data does not start with 0xe6 0xe7 0x00 0xf:',pkt[7], pkt[8], pkt[9], pkt[10])
         continue
       packet_size = len(pkt)
-      read_packet_size = ((pkt[1] & 0x0F) | pkt[2]) + 2
-      if packet_size != read_packet_size: # Discard corrupt packets
+      read_packet_size = ((pkt[1] & 0x0F) << 8 | pkt[2]) + 2
+      if packet_size != read_packet_size: # Discard incomplete packets
+        print('Packet size does not match read packet size:', packet_size, read_packet_size)
+        print("HAN: " +
+              " ".join("0x{0:02x}".format(x) for x in pkt))
         continue
       date_time_year = pkt[17] << 8 | pkt[18]
       date_time_month = pkt[19]
