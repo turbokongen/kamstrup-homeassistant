@@ -9,22 +9,23 @@ import json
 import logging
 from time import sleep
 import serial
+from crccheck.crc import CrcX25
 
 BAUDRATE = 2400
 DATA_FLAG = [230, 231, 0, 15]
 FRAME_FLAG = b'\x7e'
-LIST_TYPE_SHORT_1PH = 11
+LIST_TYPE_SHORT_1PH = 17
 LIST_TYPE_LONG_1PH = 27
 LIST_TYPE_SHORT_3PH = 25
 LIST_TYPE_LONG_3PH = 35
 WEEKDAY_MAPPING = {
-           1: 'Monday',
-           2: 'Tuesday',
-           3: 'Wednesday',
-           4: 'Thursday',
-           5: 'Friday',
-           6: 'Saturday',
-           7: 'Sunday'
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday'
 }
 
 SERIAL_PORT = '/dev/ttyUSB1'
@@ -58,6 +59,16 @@ class HanPowermeter():
             _LOGGER.warning("%s Recieved %s bytes of %s data",
                             datetime.datetime.now().isoformat(),
                             len(data), self._valid_data)
+        header_checksum = CrcX25.calc(bytes(data[1:6]))
+        read_header_checksum = (data[7] << 8 | data[6])
+        if header_checksum != read_header_checksum:
+            self._valid_data = False
+            _LOGGER.warning('Invalid header CRC check')
+        frame_checksum = CrcX25.calc(bytes(data[1:-3]))
+        read_frame_checksum = (data[-2] << 8 | data[-3])
+        if frame_checksum != read_frame_checksum:
+            self._valid_data = False
+            _LOGGER.warning('Invalid frame CRC check')
         return self._valid_data
 
     def read_bytes(self):
