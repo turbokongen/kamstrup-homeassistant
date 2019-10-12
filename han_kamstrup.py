@@ -17,6 +17,15 @@ LIST_TYPE_SHORT_1PH = 11
 LIST_TYPE_LONG_1PH = 27
 LIST_TYPE_SHORT_3PH = 25
 LIST_TYPE_LONG_3PH = 35
+WEEKDAY_MAPPING = {
+           1: 'Monday',
+           2: 'Tuesday',
+           3: 'Wednesday',
+           4: 'Thursday',
+           5: 'Friday',
+           6: 'Saturday',
+           7: 'Sunday'
+}
 
 SERIAL_PORT = '/dev/ttyUSB1'
 TIMEOUT = 0
@@ -41,7 +50,7 @@ class HanPowermeter():
     def test_valid_data(self, data):
         """Test the incoming data for validity."""
         self._valid_data = True
-        if len(data) > 400 or len(data) < 200:
+        if len(data) > 302 or len(data) < 180:
             self._valid_data = False
             _LOGGER.warning('Invalid packet size')
         if not data[0] and data[-1] == FRAME_FLAG:
@@ -97,6 +106,7 @@ class HanPowermeter():
                          ':' + date_time_minute +
                          ':' + date_time_seconds)
         han_data["date_time"] = date_time_str
+        han_data["day_of_week"] = WEEKDAY_MAPPING.get(self._pkt[21])
         list_type = self._pkt[30]
         han_data["list_type"] = list_type
         han_data["obis_list_version"] = (chr(self._pkt[33]) +
@@ -276,55 +286,56 @@ class HanPowermeter():
             date_time2_year = self._pkt[187] << 8 | self._pkt[188]
             date_time2_month = self._pkt[189]
             date_time2_date = self._pkt[190]
-            date_time2_hour = str(self._pkt[191]).zfill(2)
-            date_time2_minute = str(self._pkt[192]).zfill(2)
-            date_time2_seconds = str(self._pkt[193]).zfill(2)
-            han_data["date_time2"] = (str(date_time2_year) +
-                                      '-' + str(date_time2_month) +
-                                      '-' + str(date_time2_date) +
-                                      ' ' + date_time2_hour +
-                                      ':' + date_time2_minute +
-                                      ':' + date_time2_seconds)
-            han_data["obis_a_e_p"] = (str(self._pkt[200]) +
-                                      '.' + str(self._pkt[201]) +
+            han_data["meter_day_of_week"] = WEEKDAY_MAPPING.get(self._pkt[191])
+            date_time2_hour = str(self._pkt[192]).zfill(2)
+            date_time2_minute = str(self._pkt[193]).zfill(2)
+            date_time2_seconds = str(self._pkt[194]).zfill(2)
+            han_data["meter_date_time"] = (str(date_time2_year) +
+                                           '-' + str(date_time2_month) +
+                                           '-' + str(date_time2_date) +
+                                           ' ' + date_time2_hour +
+                                           ':' + date_time2_minute +
+                                           ':' + date_time2_seconds)
+            han_data["obis_a_e_p"] = (str(self._pkt[201]) +
                                       '.' + str(self._pkt[202]) +
                                       '.' + str(self._pkt[203]) +
                                       '.' + str(self._pkt[204]) +
-                                      '.' + str(self._pkt[205]))
-            han_data["active_energy_p"] = (self._pkt[207] << 24 |
-                                           self._pkt[208] << 16 |
-                                           self._pkt[209] << 8 |
-                                           self._pkt[210])
-            han_data["obis_a_e_n"] = (str(self._pkt[213]) +
-                                      '.' + str(self._pkt[214]) +
+                                      '.' + str(self._pkt[205]) +
+                                      '.' + str(self._pkt[206]))
+            han_data["active_energy_p"] = (self._pkt[208] << 24 |
+                                           self._pkt[209] << 16 |
+                                           self._pkt[210] << 8 |
+                                           self._pkt[211])
+            han_data["obis_a_e_n"] = (str(self._pkt[214]) +
                                       '.' + str(self._pkt[215]) +
                                       '.' + str(self._pkt[216]) +
                                       '.' + str(self._pkt[217]) +
-                                      '.' + str(self._pkt[218]))
-            han_data["active_energy_n"] = (self._pkt[220] << 24 |
-                                           self._pkt[221] << 16 |
-                                           self._pkt[222] << 8 |
-                                           self._pkt[223])
-            han_data["obis_r_e_p"] = (str(self._pkt[226]) +
-                                      '.' + str(self._pkt[227]) +
+                                      '.' + str(self._pkt[218]) +
+                                      '.' + str(self._pkt[219]))
+            han_data["active_energy_n"] = (self._pkt[221] << 24 |
+                                           self._pkt[222] << 16 |
+                                           self._pkt[223] << 8 |
+                                           self._pkt[224])
+            han_data["obis_r_e_p"] = (str(self._pkt[227]) +
                                       '.' + str(self._pkt[228]) +
                                       '.' + str(self._pkt[229]) +
                                       '.' + str(self._pkt[230]) +
-                                      '.' + str(self._pkt[231]))
-            han_data["reactive_energy_p"] = (self._pkt[233] << 24 |
-                                             self._pkt[234] << 16 |
-                                             self._pkt[235] << 8 |
-                                             self._pkt[236])
-            han_data["obis_r_e_n"] = (str(self._pkt[239]) +
-                                      '.' + str(self._pkt[240]) +
+                                      '.' + str(self._pkt[231]) +
+                                      '.' + str(self._pkt[232]))
+            han_data["reactive_energy_p"] = (self._pkt[234] << 24 |
+                                             self._pkt[235] << 16 |
+                                             self._pkt[236] << 8 |
+                                             self._pkt[237])
+            han_data["obis_r_e_n"] = (str(self._pkt[240]) +
                                       '.' + str(self._pkt[241]) +
                                       '.' + str(self._pkt[242]) +
                                       '.' + str(self._pkt[243]) +
-                                      '.' + str(self._pkt[244]))
-            han_data["reactive_energy_n"] = (self._pkt[246] << 24 |
-                                             self._pkt[247] << 16 |
-                                             self._pkt[248] << 8 |
-                                             self._pkt[249])
+                                      '.' + str(self._pkt[244]) +
+                                      '.' + str(self._pkt[245]))
+            han_data["reactive_energy_n"] = (self._pkt[247] << 24 |
+                                             self._pkt[248] << 16 |
+                                             self._pkt[249] << 8 |
+                                             self._pkt[250])
 
         if list_type == LIST_TYPE_LONG_3PH:
             han_data["obis_date_time2"] = (str(self._pkt[227]) +
@@ -336,6 +347,7 @@ class HanPowermeter():
             date_time2_year = self._pkt[235] << 8 | self._pkt[236]
             date_time2_month = self._pkt[237]
             date_time2_date = self._pkt[238]
+            han_data["day_of_week"] = WEEKDAY_MAPPING.get(self._pkt[239])
             date_time2_hour = str(self._pkt[240]).zfill(2)
             date_time2_minute = str(self._pkt[241]).zfill(2)
             date_time2_seconds = str(self._pkt[242]).zfill(2)
