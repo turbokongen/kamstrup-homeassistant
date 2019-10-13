@@ -32,8 +32,6 @@ class HanPowermeter():
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS,
             timeout=TIMEOUT)
-        self._pkt = None
-        self._valid_data = None
 
     def test_valid_data(self, data):
         """Test the incoming data for validity."""
@@ -45,7 +43,7 @@ class HanPowermeter():
         if not data[0] and data[-1] == FRAME_FLAG:
             _LOGGER.warning("%s Recieved %s bytes of %s data",
                             datetime.datetime.now().isoformat(),
-                            len(data), self._valid_data)
+                            len(data), False)
             return False
 
         header_checksum = CrcX25.calc(bytes(data[1:6]))
