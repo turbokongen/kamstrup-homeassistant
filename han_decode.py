@@ -157,9 +157,10 @@ def parse_data(data):
     han_data["current_l1"] = (pkt[162] << 24 |
                               pkt[163] << 16 |
                               pkt[164] << 8 |
-                              pkt[165])
+                              pkt[165]) / 100
 
-    if list_type == LIST_TYPE_SHORT_3PH or LIST_TYPE_LONG_3PH:
+    if (list_type == LIST_TYPE_SHORT_3PH or
+        list_type == LIST_TYPE_LONG_3PH):
         han_data["obis_c_l2"] = (str(pkt[168]) +
                                  '.' + str(pkt[169]) +
                                  '.' + str(pkt[170]) +
@@ -169,7 +170,7 @@ def parse_data(data):
         han_data["current_l2"] = (pkt[175] << 24 |
                                   pkt[176] << 16 |
                                   pkt[177] << 8 |
-                                  pkt[178])
+                                  pkt[178]) / 100
         han_data["obis_c_l3"] = (str(pkt[181]) +
                                  '.' + str(pkt[182]) +
                                  '.' + str(pkt[183]) +
@@ -179,7 +180,7 @@ def parse_data(data):
         han_data["current_l3"] = (pkt[188] << 24 |
                                   pkt[189] << 16 |
                                   pkt[190] << 8 |
-                                  pkt[191])
+                                  pkt[191]) / 100
         han_data["obis_v_l1"] = (str(pkt[194]) +
                                  '.' + str(pkt[195]) +
                                  '.' + str(pkt[196]) +
@@ -216,7 +217,9 @@ def parse_data(data):
         han_data["obis_r_e_n"] = None
         han_data["reactive_energy_n"] = None
 
-    if list_type == LIST_TYPE_SHORT_1PH or LIST_TYPE_LONG_1PH:
+    if (list_type == LIST_TYPE_SHORT_1PH or
+        list_type == LIST_TYPE_LONG_1PH):
+
         han_data["obis_v_l1"] = (str(pkt[168]) +
                                  '.' + str(pkt[169]) +
                                  '.' + str(pkt[170]) +
