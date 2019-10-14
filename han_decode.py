@@ -22,13 +22,21 @@ WEEKDAY_MAPPING = {
     7: 'Sunday'
 }
 
+METER_TYPE = {
+    6861111: 'Omnipower 1 Phase Direct meter',
+    6841121: 'Omnipower 3 Phase 3-Wire Direct meter',
+    6841131: 'Omnipower 3 Phase 4-Wire Direct meter',
+    6851121: 'Omnipower 3 Phase CT 3-Wire Direct meter',
+    6851131: 'Omnipower 3 Phase CT 4-Wire Direct meter'
+}
+
 _LOGGER = logging.getLogger(__name__)
 
 
-def parse_data(data):
+def parse_data(stored, data):
     """Parse the incoming data to dict."""
+    han_data = stored
     # pylint: disable=too-many-locals, too-many-statements
-    han_data = {}
     pkt = data
     read_packet_size = ((data[1] & 0x0F) << 8 | data[2]) + 2
     han_data["packet_size"] = read_packet_size
@@ -108,6 +116,13 @@ def parse_data(data):
                               chr(pkt[98]) +
                               chr(pkt[99]) +
                               chr(pkt[100]))
+    han_data["meter_type_str"] = METER_TYPE.get(int(chr(pkt[83]) +
+                                                chr(pkt[84]) +
+                                                chr(pkt[85]) +
+                                                chr(pkt[86]) +
+                                                chr(pkt[87]) +
+                                                chr(pkt[88]) +
+                                                chr(pkt[89])))
     han_data["obis_a_p_p"] = (str(pkt[103]) +
                               '.' + str(pkt[104]) +
                               '.' + str(pkt[105]) +
@@ -205,17 +220,6 @@ def parse_data(data):
                                  '.' + str(pkt[221]))
         han_data["voltage_l3"] = (pkt[223] << 8 |
                                   pkt[224])
-        han_data["obis_meter_date_time"] = None
-        han_data["meter_date_time"] = None
-        han_data["meter_day_of_week"] = None
-        han_data["obis_a_e_p"] = None
-        han_data["active_energy_p"] = None
-        han_data["obis_a_e_n"] = None
-        han_data["active_energy_n"] = None
-        han_data["obis_r_e_p"] = None
-        han_data["reactive_energy_p"] = None
-        han_data["obis_r_e_n"] = None
-        han_data["reactive_energy_n"] = None
 
     if (list_type == LIST_TYPE_SHORT_1PH or
         list_type == LIST_TYPE_LONG_1PH):
@@ -228,17 +232,6 @@ def parse_data(data):
                                  '.' + str(pkt[173]))
         han_data["voltage_l1"] = (pkt[175] << 8 |
                                   pkt[176])
-        han_data["obis_meter_date_time"] = None
-        han_data["meter_date_time"] = None
-        han_data["meter_day_of_week"] = None
-        han_data["obis_a_e_p"] = None
-        han_data["active_energy_p"] = None
-        han_data["obis_a_e_n"] = None
-        han_data["active_energy_n"] = None
-        han_data["obis_r_e_p"] = None
-        han_data["reactive_energy_p"] = None
-        han_data["obis_r_e_n"] = None
-        han_data["reactive_energy_n"] = None
 
     if list_type == LIST_TYPE_LONG_1PH:
         han_data["obis_meter_date_time"] = (str(pkt[179]) +
@@ -269,7 +262,7 @@ def parse_data(data):
         han_data["active_energy_p"] = (pkt[208] << 24 |
                                        pkt[209] << 16 |
                                        pkt[210] << 8 |
-                                       pkt[211])
+                                       pkt[211]) / 100
         han_data["obis_a_e_n"] = (str(pkt[214]) +
                                   '.' + str(pkt[215]) +
                                   '.' + str(pkt[216]) +
@@ -279,7 +272,7 @@ def parse_data(data):
         han_data["active_energy_n"] = (pkt[221] << 24 |
                                        pkt[222] << 16 |
                                        pkt[223] << 8 |
-                                       pkt[224])
+                                       pkt[224]) / 100
         han_data["obis_r_e_p"] = (str(pkt[227]) +
                                   '.' + str(pkt[228]) +
                                   '.' + str(pkt[229]) +
@@ -289,7 +282,7 @@ def parse_data(data):
         han_data["reactive_energy_p"] = (pkt[234] << 24 |
                                          pkt[235] << 16 |
                                          pkt[236] << 8 |
-                                         pkt[237])
+                                         pkt[237]) / 100
         han_data["obis_r_e_n"] = (str(pkt[240]) +
                                   '.' + str(pkt[241]) +
                                   '.' + str(pkt[242]) +
@@ -299,7 +292,7 @@ def parse_data(data):
         han_data["reactive_energy_n"] = (pkt[247] << 24 |
                                          pkt[248] << 16 |
                                          pkt[249] << 8 |
-                                         pkt[250])
+                                         pkt[250]) / 100
 
     if list_type == LIST_TYPE_LONG_3PH:
         han_data["obis_meter_date_time"] = (str(pkt[227]) +

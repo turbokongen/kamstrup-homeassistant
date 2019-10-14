@@ -32,6 +32,7 @@ class HanPowermeter():
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS,
             timeout=TIMEOUT)
+        self.han_data = {}
 
     def test_valid_data(self, data):
         """Test the incoming data for validity."""
@@ -92,12 +93,13 @@ class HanPowermeter():
 
 if __name__ == '__main__':
     APP = HanPowermeter()
+    han_data = {}
 
     while True:
         try:
             RAW_BYTES = APP.read_bytes()
             if APP.test_valid_data(RAW_BYTES):
-                PROCESSED_DATA = han_decode.parse_data(RAW_BYTES)
+                PROCESSED_DATA = han_decode.parse_data(han_data, RAW_BYTES)
                 print(PROCESSED_DATA)
         except KeyboardInterrupt:
             _LOGGER.error("Killed process on user signal")
