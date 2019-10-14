@@ -31,12 +31,12 @@ METER_TYPE = {
 }
 
 _LOGGER = logging.getLogger(__name__)
+# pylint: disable=too-many-locals, too-many-statements
 
 
 def parse_data(stored, data):
     """Parse the incoming data to dict."""
     han_data = stored
-    # pylint: disable=too-many-locals, too-many-statements
     pkt = data
     read_packet_size = ((data[1] & 0x0F) << 8 | data[2]) + 2
     han_data["packet_size"] = read_packet_size
@@ -117,12 +117,12 @@ def parse_data(stored, data):
                               chr(pkt[99]) +
                               chr(pkt[100]))
     han_data["meter_type_str"] = METER_TYPE.get(int(chr(pkt[83]) +
-                                                chr(pkt[84]) +
-                                                chr(pkt[85]) +
-                                                chr(pkt[86]) +
-                                                chr(pkt[87]) +
-                                                chr(pkt[88]) +
-                                                chr(pkt[89])))
+                                                    chr(pkt[84]) +
+                                                    chr(pkt[85]) +
+                                                    chr(pkt[86]) +
+                                                    chr(pkt[87]) +
+                                                    chr(pkt[88]) +
+                                                    chr(pkt[89])))
     han_data["obis_a_p_p"] = (str(pkt[103]) +
                               '.' + str(pkt[104]) +
                               '.' + str(pkt[105]) +
@@ -175,7 +175,7 @@ def parse_data(stored, data):
                               pkt[165]) / 100
 
     if (list_type == LIST_TYPE_SHORT_3PH or
-        list_type == LIST_TYPE_LONG_3PH):
+            list_type == LIST_TYPE_LONG_3PH):
         han_data["obis_c_l2"] = (str(pkt[168]) +
                                  '.' + str(pkt[169]) +
                                  '.' + str(pkt[170]) +
@@ -222,7 +222,7 @@ def parse_data(stored, data):
                                   pkt[224])
 
     if (list_type == LIST_TYPE_SHORT_1PH or
-        list_type == LIST_TYPE_LONG_1PH):
+            list_type == LIST_TYPE_LONG_1PH):
 
         han_data["obis_v_l1"] = (str(pkt[168]) +
                                  '.' + str(pkt[169]) +
@@ -323,7 +323,7 @@ def parse_data(stored, data):
         han_data["active_energy_p"] = (pkt[256] << 24 |
                                        pkt[257] << 16 |
                                        pkt[258] << 8 |
-                                       pkt[259])
+                                       pkt[259]) / 100
         han_data["obis_a_e_n"] = (str(pkt[262]) +
                                   '.' + str(pkt[263]) +
                                   '.' + str(pkt[264]) +
@@ -333,7 +333,7 @@ def parse_data(stored, data):
         han_data["active_energy_n"] = (pkt[269] << 24 |
                                        pkt[270] << 16 |
                                        pkt[271] << 8 |
-                                       pkt[272])
+                                       pkt[272]) / 100
         han_data["obis_r_e_p"] = (str(pkt[275]) +
                                   '.' + str(pkt[276]) +
                                   '.' + str(pkt[277]) +
@@ -343,7 +343,7 @@ def parse_data(stored, data):
         han_data["reactive_energy_p"] = (pkt[282] << 24 |
                                          pkt[283] << 16 |
                                          pkt[284] << 8 |
-                                         pkt[285])
+                                         pkt[285]) / 100
         han_data["obis_r_e_n"] = (str(pkt[288]) +
                                   '.' + str(pkt[289]) +
                                   '.' + str(pkt[290]) +
@@ -353,5 +353,5 @@ def parse_data(stored, data):
         han_data["reactive_energy_n"] = (pkt[295] << 24 |
                                          pkt[296] << 16 |
                                          pkt[297] << 8 |
-                                         pkt[298])
+                                         pkt[298]) / 100
     return json.dumps(han_data)

@@ -33,38 +33,45 @@ class HanPowermeter():
             bytesize=serial.EIGHTBITS,
             timeout=TIMEOUT)
         self.han_data = {}
+        self.valid_data = True
 
     def test_valid_data(self, data):
         """Test the incoming data for validity."""
         # pylint: disable=too-many-return-statements
+        self.valid_data = True
         if len(data) > 302 or len(data) < 180:
             _LOGGER.warning('Invalid packet size %s', len(data))
-            return False
+            self.valid_data = False
+            return self.valid_data
 
         if not data[0] and data[-1] == FRAME_FLAG:
             _LOGGER.warning("%s Recieved %s bytes of %s data",
                             datetime.datetime.now().isoformat(),
                             len(data), False)
-            return False
+            self.valid_data = False
+            return self.valid_data
 
         header_checksum = CrcX25.calc(bytes(data[1:6]))
         read_header_checksum = (data[7] << 8 | data[6])
 
         if header_checksum != read_header_checksum:
             _LOGGER.warning('Invalid header CRC check')
-            return False
+            self.valid_data = False
+            return self.valid_data
 
         frame_checksum = CrcX25.calc(bytes(data[1:-3]))
         read_frame_checksum = (data[-2] << 8 | data[-3])
 
         if frame_checksum != read_frame_checksum:
             _LOGGER.warning('Invalid frame CRC check')
-            return False
+            self.valid_data = False
+            return self.valid_data
 
         if data[8:12] != DATA_FLAG:
             _LOGGER.warning('Data does not start with %s: %s',
                             DATA_FLAG, data[8:12])
-            return False
+            self.valid_data = False
+            return self.valid_data
 
         packet_size = len(data)
         read_packet_size = ((data[1] & 0x0F) << 8 | data[2]) + 2
@@ -73,8 +80,9 @@ class HanPowermeter():
             _LOGGER.warning(
                 'Packet size does not match read packet size: %s : %s',
                 packet_size, read_packet_size)
-            return False
-        return True
+            self.valid_data = False
+            return self.valid_data
+        return self.valid_data
 
     def read_bytes(self):
         """Read the raw data from serial port."""
@@ -93,13 +101,13 @@ class HanPowermeter():
 
 if __name__ == '__main__':
     APP = HanPowermeter()
-    han_data = {}
+    HAN_DATA = {}
 
     while True:
         try:
             RAW_BYTES = APP.read_bytes()
             if APP.test_valid_data(RAW_BYTES):
-                PROCESSED_DATA = han_decode.parse_data(han_data, RAW_BYTES)
+                PROCESSED_DATA = han_decode.parse_data(HAN_DATA, RAW_BYTES)
                 print(PROCESSED_DATA)
         except KeyboardInterrupt:
             _LOGGER.error("Killed process on user signal")
