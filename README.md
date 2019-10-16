@@ -3,6 +3,7 @@ A quick and dirty script to make Kamstrup HAN data available to a file sensor in
 
 Connects to HAN meter with a MBus USB stick.
 Prints a json output.
+*1 phase meters are untested, just programmed based on findings.*
 I pipe this to a file, and then set up file sensors in homeassistant to track the various parameters.
 
 `unbuffer python /srv/hass3.6/src/KAmstrup/han_kamstrup.py 2>&1 | tee /home/hass/.homeassistant/HAN/han-data.json &`
