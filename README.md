@@ -1,3 +1,5 @@
+I recommend using https://github.com/turbokongen/hass-AMS which is a complete addon for homeassistant supporting several meters, and is easy to setup.
+
 # kamstrup-homeassistant
 A quick and dirty script to make Kamstrup HAN data available to a file sensor in HomeAssistant
 
